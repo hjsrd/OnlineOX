@@ -291,7 +291,7 @@ function checkDraw() {
 
     if (!board.includes("")) {
         console.log("Draw!");
-        status.textContent = "نتونستی که گوزو";
+        status.textContent = "Try Again Seyed";
         status.classList.add("draw");
         gameOver = true;
         trackEvent("game_draw", {
