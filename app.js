@@ -17,6 +17,18 @@ let board = [
     "", "", ""
 ];
 
+
+
+function trackEvent(eventName, parameters = {}) {
+
+    if (typeof gtag === "function") {
+        gtag("event", eventName, parameters);
+    }
+
+};
+
+let gameStarted = false;
+
 const cells = document.querySelectorAll(".cell");
 
 const status = document.querySelector("#status");
@@ -40,6 +52,7 @@ pvpBtn.addEventListener("click", () => {
     console.log(gameMode);
     pvpBtn.classList.add("active");
     aiBtn.classList.remove("active");
+    trackEvent("pvp_selected");
 });
 
 aiBtn.addEventListener("click", () => {
@@ -47,6 +60,7 @@ aiBtn.addEventListener("click", () => {
     console.log(gameMode);
     aiBtn.classList.add("active");
     pvpBtn.classList.remove("active");
+    trackEvent("ai_selected");
 });
 
 
@@ -64,6 +78,10 @@ function checkWinner() {
             console.log(`${board[pattern[0]]} wins!`);
             status.textContent = `${board[pattern[0]]} wins!`;
             status.classList.add("win");
+            trackEvent("game_win", {
+                winner: board[pattern[0]],
+                mode: gameMode
+            });
 
             pattern.forEach((index) => {
                 cells[index].classList.add("winner");
@@ -227,6 +245,15 @@ function makeMove(index) {
     board[index] = currentPlayer;
     console.log(board);
     checkWinner();
+    if (!gameStarted) {
+        gameStarted = true;
+
+        trackEvent("game_started", {
+            mode: gameMode
+        });
+    }
+
+
 
     if (gameOver) {
         return;
@@ -267,6 +294,9 @@ function checkDraw() {
         status.textContent = "نتونستی که گوزو";
         status.classList.add("draw");
         gameOver = true;
+        trackEvent("game_draw", {
+            mode: gameMode
+        });
 
         return true;
     }
@@ -303,6 +333,8 @@ function resetGame() {
         "", "", "",
         "", "", ""
     ];
+
+    trackEvent("game_restart");
 
     currentPlayer = "X";
 
