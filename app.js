@@ -1,164 +1,808 @@
-const winningPatterns = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
 
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
+/* =========================
+   GAME SETTINGS
+========================= */
 
-    [0, 4, 8],
-    [2, 4, 6]
-];
+let boardSize = 3;
 
-let board = [
-    "", "", "",
-    "", "", "",
-    "", "", ""
-];
+let winLength = 3;
 
 
+/* =========================
+   GAME STATE
+========================= */
 
-function trackEvent(eventName, parameters = {}) {
-
-    if (typeof gtag === "function") {
-        gtag("event", eventName, parameters);
-    }
-
-};
-
-let gameStarted = false;
-
-const cells = document.querySelectorAll(".cell");
-
-const status = document.querySelector("#status");
+let board = [];
 
 let currentPlayer = "X";
 
 let gameOver = false;
 
+let gameStarted = false;
+
 let gameMode = "";
+
+let aiThinking = false;
+
+
+/* =========================
+   DOM
+========================= */
+
+const boardElement = document.querySelector("#board");
+
+const status = document.querySelector("#status");
 
 const pvpBtn = document.querySelector("#pvpBtn");
 
 const aiBtn = document.querySelector("#aiBtn");
 
+const restartBtn = document.querySelector("#restartBtn");
+
+const sizeButtons = document.querySelectorAll(".sizeBtn");
 
 
+/* =========================
+   ANALYTICS
+========================= */
 
+function trackEvent(eventName, parameters = {}) {
+
+    if (typeof gtag === "function") {
+
+        gtag("event", eventName, parameters);
+
+    }
+
+}
+
+
+/* =========================
+   CREATE BOARD
+========================= */
+
+function createBoard() {
+
+    board = Array(boardSize * boardSize).fill("");
+
+    boardElement.innerHTML = "";
+
+    boardElement.style.setProperty(
+        "--board-size",
+        boardSize
+    );
+
+    for (let i = 0; i < board.length; i++) {
+
+        const cell = document.createElement("div");
+
+        cell.classList.add("cell");
+
+        cell.dataset.index = i;
+
+        cell.addEventListener("click", () => {
+
+            if (
+                gameMode === "ai" &&
+                currentPlayer === "O"
+            ) {
+                return;
+            }
+
+            makeMove(i);
+
+        });
+
+        boardElement.appendChild(cell);
+
+    }
+
+}
+
+
+/* =========================
+   GET CELLS
+========================= */
+
+function getCells() {
+
+    return document.querySelectorAll(".cell");
+
+}
+
+
+/* =========================
+   GAME MODE
+========================= */
 
 pvpBtn.addEventListener("click", () => {
+
     gameMode = "pvp";
-    console.log(gameMode);
+
     pvpBtn.classList.add("active");
+
     aiBtn.classList.remove("active");
+
+    resetGame();
+
     trackEvent("pvp_selected");
+
 });
+
 
 aiBtn.addEventListener("click", () => {
+
     gameMode = "ai";
-    console.log(gameMode);
+
     aiBtn.classList.add("active");
+
     pvpBtn.classList.remove("active");
+
+    resetGame();
+
     trackEvent("ai_selected");
+
 });
 
 
+/* =========================
+   BOARD SIZE
+========================= */
 
+sizeButtons.forEach((button) => {
+
+    button.addEventListener("click", () => {
+
+        boardSize = Number(button.dataset.size);
+
+        if (boardSize === 3) {
+
+            winLength = 3;
+
+        } else {
+
+            winLength = 4;
+
+        }
+
+        sizeButtons.forEach((btn) => {
+
+            btn.classList.remove("active");
+
+        });
+
+        button.classList.add("active");
+
+        resetGame();
+
+        trackEvent("board_size_selected", {
+
+            size: boardSize,
+
+            win_length: winLength
+
+        });
+
+    });
+
+});
+
+
+/* =========================
+   WINNING LINES
+========================= */
+
+function getWinningLines() {
+
+    const lines = [];
+
+    /* Rows */
+
+    for (let row = 0; row < boardSize; row++) {
+
+        for (
+            let col = 0;
+            col <= boardSize - winLength;
+            col++
+        ) {
+
+            const line = [];
+
+            for (
+                let i = 0;
+                i < winLength;
+                i++
+            ) {
+
+                line.push(
+                    row * boardSize + col + i
+                );
+
+            }
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /* Columns */
+
+    for (let col = 0; col < boardSize; col++) {
+
+        for (
+            let row = 0;
+            row <= boardSize - winLength;
+            row++
+        ) {
+
+            const line = [];
+
+            for (
+                let i = 0;
+                i < winLength;
+                i++
+            ) {
+
+                line.push(
+                    (row + i) * boardSize + col
+                );
+
+            }
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /* Diagonal ↘ */
+
+    for (
+        let row = 0;
+        row <= boardSize - winLength;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col <= boardSize - winLength;
+            col++
+        ) {
+
+            const line = [];
+
+            for (
+                let i = 0;
+                i < winLength;
+                i++
+            ) {
+
+                line.push(
+                    (row + i) * boardSize +
+                    (col + i)
+                );
+
+            }
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    /* Diagonal ↙ */
+
+    for (
+        let row = 0;
+        row <= boardSize - winLength;
+        row++
+    ) {
+
+        for (
+            let col = winLength - 1;
+            col < boardSize;
+            col++
+        ) {
+
+            const line = [];
+
+            for (
+                let i = 0;
+                i < winLength;
+                i++
+            ) {
+
+                line.push(
+                    (row + i) * boardSize +
+                    (col - i)
+                );
+
+            }
+
+            lines.push(line);
+
+        }
+
+    }
+
+
+    return lines;
+
+}
+
+
+/* =========================
+   FIND WINNING LINE
+========================= */
+
+function getWinningLine(player) {
+
+    const lines = getWinningLines();
+
+    return lines.find((line) => {
+
+        return line.every((index) => {
+
+            return board[index] === player;
+
+        });
+
+    }) || null;
+
+}
+
+
+/* =========================
+   CHECK WINNER
+========================= */
 
 function checkWinner() {
 
-    winningPatterns.forEach((pattern) => {
+    const winningLineX = getWinningLine("X");
 
-        if (
-            board[pattern[0]] !== "" &&
-            board[pattern[0]] === board[pattern[1]] &&
-            board[pattern[1]] === board[pattern[2]]
-        ) {
-            console.log(`${board[pattern[0]]} wins!`);
-            status.textContent = `${board[pattern[0]]} wins!`;
-            status.classList.add("win");
-            trackEvent("game_win", {
-                winner: board[pattern[0]],
-                mode: gameMode
-            });
+    const winningLineO = getWinningLine("O");
 
-            pattern.forEach((index) => {
-                cells[index].classList.add("winner");
-            });
+    let winningLine = null;
 
-            cells.forEach((cell, index) => {
+    let winner = null;
 
-                if (!pattern.includes(index)) {
-                    cell.classList.add("dimmed");
-                }
 
-            });
+    if (winningLineX) {
 
-            gameOver = true;
+        winner = "X";
+
+        winningLine = winningLineX;
+
+    } else if (winningLineO) {
+
+        winner = "O";
+
+        winningLine = winningLineO;
+
+    }
+
+
+    if (!winner) {
+
+        return false;
+
+    }
+
+
+    const cells = getCells();
+
+
+    status.textContent = `${winner} wins!`;
+
+    status.classList.add("win");
+
+
+    winningLine.forEach((index) => {
+
+        cells[index].classList.add("winner");
+
+    });
+
+
+    cells.forEach((cell, index) => {
+
+        if (!winningLine.includes(index)) {
+
+            cell.classList.add("dimmed");
+
         }
 
     });
 
+
+    gameOver = true;
+
+
+    trackEvent("game_win", {
+
+        winner: winner,
+
+        mode: gameMode,
+
+        board_size: boardSize
+
+    });
+
+
+    return true;
+
 }
+
+
+/* =========================
+   CHECK DRAW
+========================= */
+
+function checkDraw() {
+
+    if (!board.includes("")) {
+
+        status.textContent = "Try Again Seyed";
+
+        status.classList.add("draw");
+
+        gameOver = true;
+
+
+        trackEvent("game_draw", {
+
+            mode: gameMode,
+
+            board_size: boardSize
+
+        });
+
+
+        return true;
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =========================
+   MAKE MOVE
+========================= */
+
+function makeMove(index) {
+
+    if (gameOver) {
+
+        return;
+
+    }
+
+
+    if (board[index] !== "") {
+
+        return;
+
+    }
+
+
+    const cells = getCells();
+
+
+    board[index] = currentPlayer;
+
+
+    cells[index].textContent = currentPlayer;
+
+    cells[index].classList.add(currentPlayer);
+
+
+    console.log(board);
+
+
+    if (!gameStarted) {
+
+        gameStarted = true;
+
+        trackEvent("game_started", {
+
+            mode: gameMode,
+
+            board_size: boardSize
+
+        });
+
+    }
+
+
+    if (checkWinner()) {
+
+        return;
+
+    }
+
+
+    if (checkDraw()) {
+
+        return;
+
+    }
+
+
+    switchPlayer();
+
+
+    if (
+        gameMode === "ai" &&
+        currentPlayer === "O"
+    ) {
+
+        aiThinking = true;
+
+
+        setTimeout(() => {
+
+            aiMove();
+
+            aiThinking = false;
+
+        }, 350);
+
+    }
+
+}
+
+
+/* =========================
+   SWITCH PLAYER
+========================= */
+
+function switchPlayer() {
+
+    if (currentPlayer === "X") {
+
+        currentPlayer = "O";
+
+        status.textContent = "O's Turn";
+
+    } else {
+
+        currentPlayer = "X";
+
+        status.textContent = "X's Turn";
+
+    }
+
+}
+
+
+/* =========================
+   CHECK WINNER FOR PLAYER
+========================= */
+
+function isWinner(player) {
+
+    return getWinningLine(player) !== null;
+
+}
+
+
+/* =========================
+   AI MOVE
+========================= */
 
 function aiMove() {
 
-    let bestScore = -Infinity;
-    let bestMove;
+    if (gameOver) {
+
+        return;
+
+    }
 
 
-    for (let i = 0; i < board.length; i++) {
+    const emptyCells = [];
 
-        if (board[i] === "") {
+    board.forEach((cell, index) => {
 
-            board[i] = "O";
+        if (cell === "") {
+
+            emptyCells.push(index);
+
+        }
+
+    });
+
+
+    if (emptyCells.length === 0) {
+
+        return;
+
+    }
+
+
+    /*
+        3 × 3
+        Full Minimax
+    */
+
+    if (boardSize === 3) {
+
+        let bestScore = -Infinity;
+
+        let bestMove = emptyCells[0];
+
+
+        for (const index of emptyCells) {
+
+            board[index] = "O";
+
 
             const score = minimax(false);
 
-            board[i] = "";
+
+            board[index] = "";
+
 
             if (score > bestScore) {
 
                 bestScore = score;
-                bestMove = i;
+
+                bestMove = index;
+
             }
+
         }
+
+
+        makeMove(bestMove);
+
+        return;
+
     }
 
 
+    /*
+        4 × 4 / 5 × 5
+        Smart Heuristic AI
+    */
+
+
+    /* 1. Win immediately */
+
+    for (const index of emptyCells) {
+
+        board[index] = "O";
+
+
+        if (isWinner("O")) {
+
+            board[index] = "";
+
+            makeMove(index);
+
+            return;
+
+        }
+
+
+        board[index] = "";
+
+    }
+
+
+    /* 2. Block player */
+
+    for (const index of emptyCells) {
+
+        board[index] = "X";
+
+
+        if (isWinner("X")) {
+
+            board[index] = "";
+
+            makeMove(index);
+
+            return;
+
+        }
+
+
+        board[index] = "";
+
+    }
+
+
+    /* 3. Take center */
+
+    const centerMoves = getCenterMoves();
+
+    const availableCenters = centerMoves.filter(
+
+        (index) => board[index] === ""
+
+    );
+
+
+    if (availableCenters.length > 0) {
+
+        const center = availableCenters[0];
+
+        makeMove(center);
+
+        return;
+
+    }
+
+
+    /* 4. Prefer corners */
+
+    const corners = getCorners();
+
+    const availableCorners = corners.filter(
+
+        (index) => board[index] === ""
+
+    );
+
+
+    if (availableCorners.length > 0) {
+
+        const randomCorner =
+
+            availableCorners[
+            Math.floor(
+                Math.random() *
+                availableCorners.length
+            )
+            ];
+
+
+        makeMove(randomCorner);
+
+        return;
+
+    }
+
+
+    /* 5. Choose strategic move */
+
+    const bestMove = findBestHeuristicMove(
+        emptyCells
+    );
+
+
     makeMove(bestMove);
-}
-
-
-function evaluateBoard() {
-    if (isWinner("O")) {
-        return 10;
-    };
-    if (isWinner("X")) {
-        return -10;
-    };
-    if (!board.includes("")) {
-        return 0;
-    };
-
-    return null;
 
 }
+
+
+/* =========================
+   MINIMAX - 3 × 3
+========================= */
 
 function minimax(isMaximizing) {
 
     const score = evaluateBoard();
 
+
     if (score !== null) {
+
         return score;
+
     }
 
 
-    // O = Maximizing
     if (isMaximizing) {
 
         let bestScore = -Infinity;
+
 
         for (let i = 0; i < board.length; i++) {
 
@@ -166,194 +810,317 @@ function minimax(isMaximizing) {
 
                 board[i] = "O";
 
+
                 const score = minimax(false);
 
-                board[i] = "";
-
-                bestScore = Math.max(bestScore, score);
-            }
-        }
-
-        return bestScore;
-    }
-
-
-    // X = Minimizing
-    else {
-
-        let bestScore = Infinity;
-
-        for (let i = 0; i < board.length; i++) {
-
-            if (board[i] === "") {
-
-                board[i] = "X";
-
-                const score = minimax(true);
 
                 board[i] = "";
 
-                bestScore = Math.min(bestScore, score);
+
+                bestScore = Math.max(
+                    bestScore,
+                    score
+                );
+
             }
+
         }
 
+
         return bestScore;
+
     }
+
+
+    let bestScore = Infinity;
+
+
+    for (let i = 0; i < board.length; i++) {
+
+        if (board[i] === "") {
+
+            board[i] = "X";
+
+
+            const score = minimax(true);
+
+
+            board[i] = "";
+
+
+            bestScore = Math.min(
+                bestScore,
+                score
+            );
+
+        }
+
+    }
+
+
+    return bestScore;
+
 }
 
 
+/* =========================
+   EVALUATE BOARD
+========================= */
 
+function evaluateBoard() {
 
-function isWinner(player) {
+    if (isWinner("O")) {
 
-    return winningPatterns.some((pattern) => {
-
-        return (
-            board[pattern[0]] === player &&
-            board[pattern[1]] === player &&
-            board[pattern[2]] === player
-        );
-
-    });
-
-}
-console.log(isWinner("X"));
-console.log(isWinner("O"));
-
-
-let aiThinking = false;
-
-function makeMove(index) {
-
-    const cell = cells[index];
-
-    if (gameOver) {
-        return;
-    }
-
-    if (cell.textContent !== "") {
-        return;
-    }
-
-    if (aiThinking) {
-        return;
-    }
-
-    cell.textContent = currentPlayer;
-    cell.classList.add(currentPlayer);
-
-    board[index] = currentPlayer;
-    console.log(board);
-    checkWinner();
-    if (!gameStarted) {
-        gameStarted = true;
-
-        trackEvent("game_started", {
-            mode: gameMode
-        });
-    }
-
-
-
-    if (gameOver) {
-        return;
-    }
-
-    if (checkDraw()) {
-        return;
-    }
-
-    switchPlayer();
-
-    if (gameMode === "ai" && currentPlayer === "O") {
-
-        setTimeout(() => {
-            aiMove();
-        }, 300);
+        return 10;
 
     }
 
-}
 
-function switchPlayer() {
+    if (isWinner("X")) {
 
-    if (currentPlayer === "X") {
-        currentPlayer = "O";
-        status.textContent = "O's Turn";
-    } else {
-        currentPlayer = "X";
-        status.textContent = "X's Turn";
+        return -10;
+
     }
 
-}
-
-function checkDraw() {
 
     if (!board.includes("")) {
-        console.log("Draw!");
-        status.textContent = "Try Again Seyed";
-        status.classList.add("draw");
-        gameOver = true;
-        trackEvent("game_draw", {
-            mode: gameMode
-        });
 
-        return true;
+        return 0;
+
     }
 
-    return false;
+
+    return null;
+
 }
 
 
+/* =========================
+   CENTER MOVES
+========================= */
+
+function getCenterMoves() {
+
+    const centers = [];
 
 
+    if (boardSize % 2 === 1) {
+
+        const center = Math.floor(
+            boardSize / 2
+        );
+
+        centers.push(
+            center * boardSize + center
+        );
+
+    } else {
+
+        const first = boardSize / 2 - 1;
+
+        const second = boardSize / 2;
 
 
-cells.forEach((cell, index) => {
+        centers.push(
+            first * boardSize + first
+        );
 
-    cell.addEventListener("click", () => {
+        centers.push(
+            first * boardSize + second
+        );
 
-        if (gameMode === "ai" && currentPlayer === "O") {
-            return;
+        centers.push(
+            second * boardSize + first
+        );
+
+        centers.push(
+            second * boardSize + second
+        );
+
+    }
+
+
+    return centers;
+
+}
+
+
+/* =========================
+   CORNERS
+========================= */
+
+function getCorners() {
+
+    const last = boardSize - 1;
+
+
+    return [
+        0,
+        last,
+        last * boardSize,
+        last * boardSize + last
+    ];
+
+}
+
+
+/* =========================
+   HEURISTIC AI
+========================= */
+
+function findBestHeuristicMove(emptyCells) {
+
+    let bestMove = emptyCells[0];
+
+    let bestScore = -Infinity;
+
+
+    for (const index of emptyCells) {
+
+        board[index] = "O";
+
+
+        let score = evaluatePosition("O");
+
+
+        board[index] = "";
+
+
+        board[index] = "X";
+
+
+        score += evaluatePosition("X") * 0.8;
+
+
+        board[index] = "";
+
+
+        if (score > bestScore) {
+
+            bestScore = score;
+
+            bestMove = index;
+
         }
 
-        makeMove(index);
-
-    });
-
-});
+    }
 
 
-const restartBtn = document.querySelector("#restartBtn");
+    return bestMove;
+
+}
+
+
+/* =========================
+   POSITION EVALUATION
+========================= */
+
+function evaluatePosition(player) {
+
+    let score = 0;
+
+    const lines = getWinningLines();
+
+
+    for (const line of lines) {
+
+        let playerCount = 0;
+
+        let emptyCount = 0;
+
+
+        for (const index of line) {
+
+            if (board[index] === player) {
+
+                playerCount++;
+
+            } else if (board[index] === "") {
+
+                emptyCount++;
+
+            }
+
+        }
+
+
+        if (playerCount === winLength) {
+
+            score += 10000;
+
+        } else if (
+            playerCount === winLength - 1 &&
+            emptyCount === 1
+        ) {
+
+            score += 1000;
+
+        } else if (
+            playerCount === winLength - 2 &&
+            emptyCount >= 2
+        ) {
+
+            score += 100;
+
+        } else if (playerCount > 0) {
+
+            score += playerCount * 10;
+
+        }
+
+    }
+
+
+    return score;
+
+}
+
+
+/* =========================
+   RESET GAME
+========================= */
 
 function resetGame() {
 
-    board = [
-        "", "", "",
-        "", "", "",
-        "", "", ""
-    ];
+    gameOver = false;
 
-    trackEvent("game_restart");
+    gameStarted = false;
+
+    aiThinking = false;
 
     currentPlayer = "X";
 
-    gameOver = false;
 
     status.textContent = "X's Turn";
 
-    status.classList.remove("win");
-    status.classList.remove("draw");
+    status.classList.remove(
+        "win",
+        "draw"
+    );
 
 
-    cells.forEach((cell) => {
-        cell.textContent = "";
-        cell.classList.remove("X", "O");
-        cell.classList.remove("X", "O");
-        cell.classList.remove("winner", "dimmed");
+    createBoard();
+
+
+    trackEvent("game_restart", {
+
+        board_size: boardSize
+
     });
 
 }
 
 restartBtn.addEventListener("click", resetGame);
+
+
+/* =========================
+   START GAME
+========================= */
+
+createBoard();
+
+
+
+
+
 

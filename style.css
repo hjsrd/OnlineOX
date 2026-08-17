@@ -5,13 +5,28 @@
     font-style: normal;
 }
 
+
+/* =========================
+   GAME
+========================= */
+
 #game {
     text-align: center;
 }
 
+
+/* =========================
+   HEADINGS
+========================= */
+
 h2 {
     color: aliceblue;
 }
+
+
+/* =========================
+   GAME MODE
+========================= */
 
 #modeSelection {
     display: flex;
@@ -58,6 +73,63 @@ h2 {
         inset 0 0 10px rgba(255, 0, 0, 0.2);
 }
 
+
+/* =========================
+   BOARD SIZE
+========================= */
+
+#sizeSelection {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+
+    margin-top: 14px;
+}
+
+.sizeBtn {
+    padding: 7px 13px;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    color: white;
+
+    background: rgba(255, 254, 254, 0.15);
+
+    border: 1px solid rgba(255, 0, 0, 0.35);
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.sizeBtn:hover {
+    background: rgba(255, 0, 0, 0.15);
+
+    box-shadow:
+        0 0 8px rgba(255, 0, 0, 0.3),
+        inset 0 0 8px rgba(255, 0, 0, 0.1);
+
+    transform: translateY(-1px);
+}
+
+.sizeBtn.active {
+    background: rgba(255, 0, 0, 0.22);
+
+    border-color: red;
+
+    box-shadow:
+        0 0 8px rgba(255, 0, 0, 0.4),
+        inset 0 0 8px rgba(255, 0, 0, 0.15);
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
 #status {
     margin: 20px auto;
 
@@ -85,7 +157,14 @@ h2 {
     letter-spacing: 2px;
 }
 
+
+/* =========================
+   BOARD
+========================= */
+
 #board {
+    --board-size: 3;
+
     width: 360px;
     height: 360px;
 
@@ -94,8 +173,9 @@ h2 {
     padding: 12px;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+
+    grid-template-columns: repeat(var(--board-size), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--board-size), minmax(0, 1fr));
 
     gap: 12px;
 
@@ -110,11 +190,22 @@ h2 {
         0 0 40px rgba(255, 0, 0, 0.15);
 
     border-radius: 12px;
+
+    margin: 0 auto;
 }
+
+
+/* =========================
+   CELLS
+========================= */
 
 .cell {
     width: auto;
     height: auto;
+
+    min-width: 0;
+    min-height: 0;
+    
 
     box-sizing: border-box;
 
@@ -128,9 +219,9 @@ h2 {
 
     font-size: 60px;
     font-weight: bold;
+
     transition: 0.2s;
 }
-
 
 .cell:hover {
     background: rgba(255, 0, 0, 0.08);
@@ -142,8 +233,14 @@ h2 {
     transition: 0.2s;
 }
 
+
+/* =========================
+   X
+========================= */
+
 .cell.X {
     color: red;
+
     text-shadow:
         0 0 5px red,
         0 0 15px red,
@@ -152,8 +249,14 @@ h2 {
     animation: markAppear 0.25s ease-out;
 }
 
+
+/* =========================
+   O
+========================= */
+
 .cell.O {
     color: white;
+
     text-shadow:
         0 0 5px white,
         0 0 15px white,
@@ -161,6 +264,11 @@ h2 {
 
     animation: markAppear 0.25s ease-out;
 }
+
+
+/* =========================
+   WINNER
+========================= */
 
 .cell.winner {
     background: rgba(255, 0, 0, 0.18);
@@ -180,10 +288,21 @@ h2 {
     animation: winnerPulse 0.8s infinite alternate;
 }
 
+
+/* =========================
+   DIMMED
+========================= */
+
 .cell.dimmed {
     opacity: 0.25;
+
     filter: grayscale(0.7);
 }
+
+
+/* =========================
+   WIN STATUS
+========================= */
 
 #status.win {
     color: red;
@@ -197,22 +316,35 @@ h2 {
 }
 
 
-
+/* =========================
+   BODY
+========================= */
 
 body {
     margin: 0;
+
     min-height: 100vh;
 
     display: flex;
+
     justify-content: center;
     align-items: center;
 
     background-image: url("assets/bg.jpg");
+
     background-size: cover;
+
     background-position: center;
+
     background-repeat: no-repeat;
+
     background-attachment: fixed;
 }
+
+
+/* =========================
+   TITLE
+========================= */
 
 h1 {
     font-family: "Nosifer", cursive;
@@ -227,6 +359,11 @@ h1 {
         0 0 30px rgb(124, 5, 5);
 }
 
+
+/* =========================
+   RESTART
+========================= */
+
 #restartBtn {
     margin-top: 18px;
 
@@ -240,6 +377,7 @@ h1 {
     background: rgba(0, 0, 0, 0.5);
 
     border: 1px solid rgba(255, 0, 0, 0.6);
+
     border-radius: 6px;
 
     cursor: pointer;
@@ -257,7 +395,13 @@ h1 {
     transform: translateY(-2px);
 }
 
+
+/* =========================
+   ANIMATIONS
+========================= */
+
 @keyframes markAppear {
+
     from {
         transform: scale(0);
         opacity: 0;
@@ -267,9 +411,12 @@ h1 {
         transform: scale(1);
         opacity: 1;
     }
+
 }
 
+
 @keyframes winnerPulse {
+
     from {
         transform: scale(1);
     }
@@ -277,9 +424,12 @@ h1 {
     to {
         transform: scale(1.05);
     }
+
 }
 
+
 @keyframes statusPulse {
+
     from {
         transform: scale(1);
     }
@@ -287,34 +437,46 @@ h1 {
     to {
         transform: scale(1.08);
     }
+
 }
 
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 768px) {
 
     body {
         margin: 0;
+
         min-height: 100vh;
 
         display: flex;
+
         justify-content: center;
         align-items: center;
 
         background-image: url("assets/bgmobile.jpg");
+
         background-size: cover;
+
         background-position: center;
+
         background-repeat: no-repeat;
     }
 
+
     #board {
-        width: 360px;
-        height: 360px;
+        width: min(360px, 90vw);
+        height: min(360px, 90vw);
 
         display: grid;
 
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
+        grid-template-columns: repeat(var(--board-size), minmax(0, 1fr));
+        grid-template-rows: repeat(var(--board-size), minmax(0, 1fr));
     }
+
 
     .cell {
         width: auto;
@@ -325,15 +487,19 @@ h1 {
         border: 1px solid rgba(255, 0, 0, 0.35);
 
         display: flex;
+
         justify-content: center;
         align-items: center;
 
         cursor: pointer;
 
-        font-size: 60px;
+        font-size: clamp(32px, 12vw, 60px);
+
         font-weight: bold;
+
         transition: 0.2s;
     }
+
 
     .cell:hover {
         background: rgba(255, 0, 0, 0.08);
@@ -343,6 +509,11 @@ h1 {
             0 0 10px rgba(255, 0, 0, 0.15);
 
         transition: 0.2s;
+    }
+
+
+    h1 {
+        font-size: clamp(42px, 13vw, 60px);
     }
 
 }
