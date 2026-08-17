@@ -5,6 +5,20 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: "identify";
+    src: url("./assets/Identify.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "zaychik";
+    src: url("./assets/Zaychik-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
 
 /* =========================
    GAME
@@ -125,6 +139,61 @@ h2 {
         inset 0 0 8px rgba(255, 0, 0, 0.15);
 }
 
+/* =========================
+   GAME GUIDE
+========================= */
+
+#gameGuide {
+    width: min(360px, 90vw);
+
+    box-sizing: border-box;
+
+    margin: 16px auto;
+
+    padding: 12px 18px;
+
+    background: rgba(0, 0, 0, 0.38);
+
+    border: 1px solid rgba(255, 0, 0, 0.35);
+
+    border-radius: 10px;
+
+    backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 0 12px rgba(255, 0, 0, 0.15),
+        inset 0 0 12px rgba(255, 0, 0, 0.05);
+
+    color: white;
+
+    direction: rtl;
+
+    text-align: center;
+}
+
+#gameGuide h3 {
+    margin: 0 0 7px;
+
+    color: red;
+
+    font-size: 20px;
+
+    text-shadow:
+        0 0 5px red,
+        0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+#gameGuide p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.9);
+
+    font-size: 18px;
+
+    line-height: 1.8;
+}
+
+
 
 /* =========================
    STATUS
@@ -205,7 +274,7 @@ h2 {
 
     min-width: 0;
     min-height: 0;
-    
+
 
     box-sizing: border-box;
 
@@ -395,6 +464,39 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* =========================
+   WATERMARK
+========================= */
+
+body::after {
+    content: "hjsrd";
+
+    position: fixed;
+
+    right: 18px;
+    bottom: 12px;
+
+    color: rgba(243, 9, 9, 0.836);
+
+    font-family: zaychik;
+
+    font-size: 50px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    z-index: 9999;
+
+    text-shadow:
+        0 0 6px rgba(255, 0, 0, 0.2);
+}
+
+
 
 /* =========================
    ANIMATIONS
@@ -515,5 +617,39 @@ h1 {
     h1 {
         font-size: clamp(42px, 13vw, 60px);
     }
+
+
+    /* =========================
+   WATERMARK
+========================= */
+
+    body::after {
+        content: "hjsrd";
+
+        position: fixed;
+
+        right: 7px;
+        bottom: 5px;
+
+        color: rgba(211, 5, 5, 0.952);
+
+        font-family: zaychik;
+
+        font-size: 25px;
+
+        font-weight: bold;
+
+        letter-spacing: 2px;
+
+        pointer-events: none;
+
+        user-select: none;
+
+        z-index: 9999;
+
+        text-shadow:
+            0 0 6px rgba(255, 0, 0, 0.2);
+    }
+
 
 }

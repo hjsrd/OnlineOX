@@ -41,6 +41,29 @@ const restartBtn = document.querySelector("#restartBtn");
 
 const sizeButtons = document.querySelectorAll(".sizeBtn");
 
+const guideText = document.querySelector("#guideText");
+
+
+
+/* =========================
+   GUIDE
+========================= */
+
+function updateGuide() {
+
+    if (boardSize === 3) {
+
+        guideText.textContent =
+            "برای برنده شدن، ۳ مهره را پشت سر هم بچینید.";
+
+    } else {
+
+        guideText.textContent =
+            "برای برنده شدن، ۴ مهره را پشت سر هم بچینید.";
+
+    }
+
+}
 
 /* =========================
    ANALYTICS
@@ -164,6 +187,8 @@ sizeButtons.forEach((button) => {
             winLength = 4;
 
         }
+
+        updateGuide();
 
         sizeButtons.forEach((btn) => {
 
@@ -1118,6 +1143,8 @@ restartBtn.addEventListener("click", resetGame);
 ========================= */
 
 createBoard();
+
+updateGuide();
 
 
 
